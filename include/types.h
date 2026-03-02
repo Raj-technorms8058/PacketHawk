@@ -144,9 +144,9 @@ struct BlockRule {
 struct ReportEntry {
     AppType     app_type;       // Which application
     std::string app_name;       // Human readable name e.g. "YouTube"
-    uint64_t    packet_count;   // Total packets seen
-    uint64_t    byte_count;     // Total bytes seen
+    uint64_t    packet_count;   
+    uint64_t    byte_count;    
     double      percentage;     // Percentage of total traffic
-    bool        was_blocked;    // Was this app blocked?
+    bool        was_blocked;    
 };
 
