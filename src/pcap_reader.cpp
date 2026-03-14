@@ -104,7 +104,7 @@ void PcapReader::close() {
     is_open_ = false;
 }
 
-//file open?
+//file open or no
 bool PcapReader::isOpen() const {
     return is_open_;
 }
