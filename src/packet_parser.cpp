@@ -22,7 +22,7 @@ bool PacketParser::parseEthernet(const uint8_t* data, size_t len, ParsedPacket& 
         return false;
     parsed.dst_mac = macToString(data);
     parsed.src_mac = macToString(data + 6);
-    uint16_t ethertype = (data[12] << 8) | data[13];
+    uint16_t ethertype = (static_cast<uint16_t>(data[12]) << 8) | data[13];
     if (ethertype == 0x0800)
         return parseIPv4(data + 14, len - 14, parsed);
     return true;
@@ -32,6 +32,8 @@ bool PacketParser::parseIPv4(const uint8_t* data, size_t len, ParsedPacket& pars
     if (len < 20)
         return false;
     uint8_t ihl = (data[0] & 0x0F) * 4;
+    if (ihl < 20 || len < ihl)
+        return false;
     parsed.ttl      = data[8];
     parsed.protocol = data[9];
     uint32_t src_ip =
@@ -60,8 +62,8 @@ bool PacketParser::parseIPv4(const uint8_t* data, size_t len, ParsedPacket& pars
 bool PacketParser::parseTCP(const uint8_t* data, size_t len, ParsedPacket& parsed) {
     if (len < 20)
         return false;
-    parsed.src_port = (data[0] << 8) | data[1];
-    parsed.dst_port = (data[2] << 8) | data[3];
+    parsed.src_port = (static_cast<uint16_t>(data[0]) << 8) | data[1];
+    parsed.dst_port = (static_cast<uint16_t>(data[2]) << 8) | data[3];
     parsed.seq_num =
         (static_cast<uint32_t>(data[4]) << 24) |
         (static_cast<uint32_t>(data[5]) << 16) |
@@ -73,6 +75,8 @@ bool PacketParser::parseTCP(const uint8_t* data, size_t len, ParsedPacket& parse
         (static_cast<uint32_t>(data[10]) << 8)  |
         static_cast<uint32_t>(data[11]);
     uint8_t tcp_header_len = ((data[12] >> 4) & 0x0F) * 4;
+    if (tcp_header_len < 20 || len < tcp_header_len)
+        return false;
     parsed.flag_fin = (data[13] & 0x01) != 0;
     parsed.flag_syn = (data[13] & 0x02) != 0;
     parsed.flag_rst = (data[13] & 0x04) != 0;
@@ -88,8 +92,8 @@ bool PacketParser::parseTCP(const uint8_t* data, size_t len, ParsedPacket& parse
 bool PacketParser::parseUDP(const uint8_t* data, size_t len, ParsedPacket& parsed) {
     if (len < 8)
         return false;
-    parsed.src_port = (data[0] << 8) | data[1];
-    parsed.dst_port = (data[2] << 8) | data[3];
+    parsed.src_port = (static_cast<uint16_t>(data[0]) << 8) | data[1];
+    parsed.dst_port = (static_cast<uint16_t>(data[2]) << 8) | data[3];
     if (len > 8) {
         parsed.payload.assign(data + 8, data + len);
         parsed.payload_length = parsed.payload.size();
@@ -106,7 +110,7 @@ string PacketParser::macToString(const uint8_t* mac) {
             << uppercase
             << setw(2)
             << setfill('0')
-            << (int)mac[i];
+            << static_cast<int>(mac[i]);
     }
     return oss.str();
 }

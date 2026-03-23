@@ -124,5 +124,5 @@ struct ReportEntry {
     double      percentage;
     bool        was_blocked;
 };
-```
+
 
